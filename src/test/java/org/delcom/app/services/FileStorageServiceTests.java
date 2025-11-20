@@ -4,12 +4,14 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.mockito.MockedStatic;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -179,21 +181,23 @@ class FileStorageServiceTests {
     }
 
     @Test
-    @DisplayName("Delete file return false ketika permission denied")
-    void deleteFile_return_false_ketika_permission_denied() throws Exception {
+    @DisplayName("Delete file return false ketika IOException terjadi")
+    void deleteFile_return_false_ketika_ioexception() throws Exception {
         // Arrange
-        String filename = "protected-file.txt";
-        Path protectedFile = tempDir.resolve(filename);
-        Files.write(protectedFile, "content".getBytes());
+        String filename = "test-file.txt";
+        Path filePath = Paths.get(fileStorageService.uploadDir).resolve(filename);
 
-        // Set file to read-only (simulate permission issue)
-        protectedFile.toFile().setReadOnly();
+        // Mock Files class untuk melemparkan IOException
+        try (MockedStatic<Files> filesMock = mockStatic(Files.class)) {
+            filesMock.when(() -> Files.deleteIfExists(filePath))
+                    .thenThrow(new IOException("Permission denied"));
 
-        // Act
-        boolean result = fileStorageService.deleteFile(filename);
+            // Act
+            boolean result = fileStorageService.deleteFile(filename);
 
-        // Assert
-        assertFalse(result);
+            // Assert
+            assertFalse(result);
+        }
     }
 
     @Test
