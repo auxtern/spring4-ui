@@ -242,6 +242,8 @@
 					<excludes>
 						<!-- Exclude specific classes -->
 						<exclude>**/utils/**</exclude>
+						<exclude>**/configs/**</exclude>
+						<exclude>**/dto/**</exclude>
 						<exclude>**/views/**</exclude>
 					</excludes>
 
